@@ -1,30 +1,27 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:rodandoando_platform/main.dart';
+import 'package:rodandoando_platform/widgets/common/brand_logo.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('App arranca, mueve foco con Enter y navega a registro', (WidgetTester tester) async {
+    await tester.pumpWidget(const RodandoAndoApp());
+    expect(find.byType(BrandLogo), findsOneWidget);
+    expect(find.text('Bienvenido'), findsOneWidget);
+    expect(find.text('Iniciar sesión'), findsOneWidget);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    // Verifica que Enter mueve el foco del correo a la contraseña
+    final fields = find.byType(TextFormField);
+    expect(fields, findsNWidgets(2));
+    await tester.tap(fields.at(0));
+    await tester.testTextInput.receiveAction(TextInputAction.next);
     await tester.pump();
+    final passEditable = tester.widget<EditableText>(find.descendant(of: fields.at(1), matching: find.byType(EditableText)));
+    expect(passEditable.focusNode.hasFocus, isTrue);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Navega a la pantalla de registro
+    await tester.tap(find.text('¿No tienes cuenta? Regístrate'));
+    await tester.pumpAndSettle();
+    expect(find.text('Crear cuenta'), findsNWidgets(2)); // título + botón
   });
 }
